@@ -3,8 +3,23 @@ import streamlit as st
 from recommender import MovieMatch, DISCOVERY_BANDS
 from grok_helper import explain
 
-st.set_page_config(page_title="MovieMatch", page_icon="🎬", layout="wide")
-st.markdown("""<style>.stApp{background:#111318;color:#f5f5f5}div.stButton>button{border-radius:12px}h1,h2,h3{letter-spacing:-.03em}</style>""", unsafe_allow_html=True)
+st.set_page_config(page_title="MovieMatch", page_icon="🎬", layout="wide", initial_sidebar_state="collapsed")
+
+st.markdown("""
+<style>
+.stApp {background: #FAF8F4; color: #292725;}
+.block-container {max-width: 1180px; padding-top: 2rem; padding-bottom: 4rem;}
+h1, h2, h3 {color: #292725; letter-spacing: -0.03em;}
+p, label {color: #49443F;}
+div.stButton > button {border-radius: 12px; min-height: 58px; font-weight: 600; border: 1px solid #DED6CD;}
+div.stButton > button[kind="primary"] {background: #8F3547; color: white; border-color: #8F3547;}
+div.stButton > button[kind="secondary"] {background: #FFFFFF; color: #292725;}
+div.stButton > button:hover {border-color: #8F3547; color: #8F3547;}
+div.stButton > button[kind="primary"]:hover {background: #75283A; color: white;}
+div[data-testid="stTabs"] button[aria-selected="true"] {color: #8F3547;}
+</style>
+""", unsafe_allow_html=True)
+
 @st.cache_resource
 def load_model(): return MovieMatch(Path(__file__).parent / "data")
 try: model = load_model()
