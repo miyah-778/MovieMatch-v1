@@ -4,7 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from pathlib import Path
 
 DISCOVERY_BANDS = {"Deep Cuts": (10, 24), "Hidden Gems": (25, 49), "Under the Radar": (50, 149), "Popular Picks": (150, float("inf"))}
-MIN_QUALITY = 3.7
+MIN_QUALITY = 3.5
 ALPHA = 1.0  # Selected during small-data validation.
 
 class MovieMatch:
