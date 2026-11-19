@@ -7,12 +7,7 @@ from groq_helper import explain
 
 # Page setup
 st.set_page_config(page_title="MovieMatch", page_icon="🎬", layout="wide", initial_sidebar_state="collapsed")
-
-try:
-    st.write("Groq API key detected:", bool(st.secrets.get("GROQ_API_KEY")))
-except Exception:
-    st.write("Groq API key detected: False")
-    
+  
 # Styling
 st.markdown("""
 <style>
