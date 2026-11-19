@@ -16,10 +16,30 @@ st.markdown("""
 h1, h2, h3 {color: #292725; letter-spacing: -0.03em;}
 p, label {color: #49443F;}
 div.stButton > button {border-radius: 12px; font-weight: 600; border: 1px solid #DED6CD;}
-div.stButton > button[kind="primary"] {background: #8F3547; color: white; border-color: #8F3547;}
-div.stButton > button[kind="secondary"] {background: #FFFFFF; color: #292725;}
-div.stButton > button:hover {border-color: #8F3547; color: #8F3547;}
-div.stButton > button[kind="primary"]:hover {background: #75283A; color: white;}
+div.stButton > button[kind="primary"],
+div.stButton > button[kind="primary"] *,
+div.stButton > button[data-testid="stBaseButton-primary"],
+div.stButton > button[data-testid="stBaseButton-primary"] * {
+    background-color: #8F3547;
+    color: #FFFFFF !important;
+    border-color: #8F3547;
+}
+div.stButton > button[kind="primary"]:hover,
+div.stButton > button[data-testid="stBaseButton-primary"]:hover {
+    background-color: #75283A;
+    color: #FFFFFF !important;
+}
+div.stButton > button[kind="secondary"],
+div.stButton > button[data-testid="stBaseButton-secondary"] {
+    background: #FFFFFF;
+    color: #292725 !important;
+    border: 1px solid #DED6CD;
+}
+div.stButton > button[kind="secondary"] *,
+div.stButton > button[data-testid="stBaseButton-secondary"] * {
+    color: #292725 !important;
+}
+div.stButton > button:hover {border-color: #8F3547;}
 div[data-testid="stTabs"] button[aria-selected="true"] {color: #8F3547;}
 div.st-key-mode_personal button, div.st-key-mode_beginner button {
     background: #FFFFFF !important;
@@ -29,15 +49,23 @@ div.st-key-mode_personal button, div.st-key-mode_beginner button {
     min-height: 95px;
     white-space: pre-wrap;
 }
-div.st-key-mode_personal button:hover, div.st-key-mode_beginner button:hover {
-    background: #F9F0F1 !important;
-    border-color: #8F3547 !important;
-}
-div.st-key-mode_personal button[kind="primary"], div.st-key-mode_beginner button[kind="primary"] {
+div.st-key-mode_personal button *,
+div.st-key-mode_beginner button * {color: #292725 !important; background: transparent !important;}
+div.st-key-mode_personal button:hover,
+div.st-key-mode_beginner button:hover {background: #F9F0F1 !important; border-color: #8F3547 !important;}
+div.st-key-mode_personal button[kind="primary"],
+div.st-key-mode_beginner button[kind="primary"] {
     background: #FFFFFF !important;
     color: #292725 !important;
     border: 2px solid #8F3547 !important;
 }
+.moviematch-progress {max-width: 380px; margin: 0 0 24px 0;}
+.moviematch-progress-header {display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;}
+.moviematch-progress-title {font-size: 14px; font-weight: 500; color: #746D66;}
+.moviematch-progress-step {font-size: 12px; font-weight: 600; color: #8F3547;}
+.moviematch-progress-bars {display: flex; gap: 5px;}
+.moviematch-progress-bar {height: 5px; flex: 1; border-radius: 8px; background: #E8E1DA;}
+.moviematch-progress-bar.active {background: #8F3547;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -87,7 +115,7 @@ def update_rating(mid):
 
 def remove_rating(mid):
     st.session_state.ratings.pop(mid, None)
-    st.session_state[f"rate_{mid}"] = "Not watched"
+    st.session_state.pop(f"rate_{mid}", None)
     clear_results()
 
 def current_signature():
@@ -123,12 +151,21 @@ st.caption("Discover beyond the obvious · Personalized movie discovery")
 tab1, tab2 = st.tabs(["🔎 Discover Movies", "🎞️ Your Movie Matches"])
 
 with tab1:
-    st.markdown("### Your discovery journey")
-    st.progress(st.session_state.step / 3)
-    st.caption(f"Step {st.session_state.step} of 3")
+    # Compact progress tracker
+    step = st.session_state.step
+    bars = "".join([f'<div class="moviematch-progress-bar {"active" if i <= step else ""}"></div>' for i in range(1, 4)])
+    st.markdown(f"""
+    <div class="moviematch-progress">
+        <div class="moviematch-progress-header">
+            <span class="moviematch-progress-title">Your discovery journey</span>
+            <span class="moviematch-progress-step">Step {step} of 3</span>
+        </div>
+        <div class="moviematch-progress-bars">{bars}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # STEP 1: Choose mode
-    if st.session_state.step == 1:
+    if step == 1:
         st.header("1 · How would you like to explore?")
         st.write("Choose your starting point.")
 
@@ -145,10 +182,13 @@ with tab1:
         elif st.session_state.mode == "beginner":
             st.info("Explore well-rated movies without providing personal ratings.")
 
-        st.button("Continue →", type="primary", disabled=st.session_state.mode is None, on_click=next_step, use_container_width=True)
+        st.write("")
+        spacer, forward = st.columns([5, 1])
+        with forward:
+            st.button("Continue →", type="primary", disabled=st.session_state.mode is None, on_click=next_step, use_container_width=True)
 
     # STEP 2: Discovery preferences
-    elif st.session_state.step == 2:
+    elif step == 2:
         st.header("2 · Set your discovery preferences")
         st.write("Tell us what you're in the mood for.")
 
@@ -170,14 +210,15 @@ with tab1:
 
         st.caption("Viewing time is a strict maximum. Movies with unknown runtimes are excluded when a limit is selected.")
 
-        back, forward = st.columns(2)
+        st.write("")
+        spacer, back, forward = st.columns([4, 1, 1])
         with back:
             st.button("← Back", on_click=previous_step, use_container_width=True)
         with forward:
             st.button("Continue →", type="primary", on_click=next_step, use_container_width=True)
 
     # STEP 3: Ratings or beginner summary
-    elif st.session_state.step == 3:
+    elif step == 3:
         if st.session_state.mode == "personal":
             st.header("3 · Rate movies you've watched")
             st.write("Rate at least **3 movies**. Try including two you enjoyed and one you didn't.")
@@ -235,7 +276,6 @@ with tab1:
             rated_count = len(st.session_state.ratings)
             st.divider()
             st.write(f"**{rated_count} movies rated · 3 minimum**")
-            st.progress(min(rated_count / 3, 1.0))
 
             if rated_count >= 3:
                 st.success("You're ready for personalized recommendations.")
@@ -263,7 +303,8 @@ with tab1:
         st.subheader("Your discovery settings")
         st.info(f"**Mode:** {'Personalized' if st.session_state.mode == 'personal' else 'New to Movies'}\n\n**Discovery level:** {st.session_state.level}\n\n**Viewing time:** {st.session_state.runtime_choice}\n\n**Recommendations:** {st.session_state.count}")
 
-        back, generate = st.columns([1, 2])
+        st.write("")
+        spacer, back, generate = st.columns([3, 1, 2])
         with back:
             st.button("← Back", on_click=previous_step, use_container_width=True)
 
